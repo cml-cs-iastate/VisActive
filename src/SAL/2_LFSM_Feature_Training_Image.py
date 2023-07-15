@@ -14,7 +14,7 @@ def main():
     # ------------------------------------------------------------------------------------------------------------------
     # Load Data and Model
 
-    train_dataset = data_process.get_dataset(settings.data_dir)
+    train_dataset = data_process.get_dataset(settings.training_path)
 
     network = importlib.import_module(settings.model_def, 'inference')
 
@@ -55,17 +55,19 @@ def main():
 
             saver.restore(sess, tf.train.latest_checkpoint(settings.models_base_dir))
 
+            # write the similarity matrix to the file
             print('Loading training data')
             step = 0
             total_img = np.size(train_dataset, 0)
             print('calculate the accuracy on validation set')
-            csv_train_feature = open(settings.similarity_matrix, 'a+')
+            csv_train_feature_sm = open(settings.similarity_matrix, 'a+')
             matrix = sess.run([similar_matrix])
             print(matrix[0].shape)
             df = pd.DataFrame(matrix[0])
-            df.to_csv(csv_train_feature, header=False)
-            csv_train_feature.close()
-            
+            df.to_csv(csv_train_feature_sm, header=False)
+            csv_train_feature_sm.close()
+
+            # write the training file names and the training features to the files
             csv_train_name = open(settings.train_name, 'a+')
             csv_train_feature = open(settings.train_feature, 'a+')
 
@@ -73,7 +75,7 @@ def main():
                 valid_x = data_process.load_data_v2(train_dataset, step, settings.image_size)
                 feature_vector = sess.run([embeddings], feed_dict={images_placeholder: valid_x})
                 if step % 5000 == 0:
-                    print(f'File name: {train_dataset[step].file_name}')
+                    # print(f'File name: {train_dataset[step].file_name}')
                     csv_train_name.close()
                     csv_train_feature.close()
                     csv_train_name = open(settings.train_name, 'a+')

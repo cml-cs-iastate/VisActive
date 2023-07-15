@@ -84,7 +84,7 @@ with open(settings.search_feature) as csvfile:  # settings.search_feature --> 's
 				for j in range(4):
 					if i == j:
 						# print("do entropy here");
-						R[i][j] = -(((arr[i][0]) * np.log(error+arr[i][0])) + ((arr[i][1]) * np.log(error+arr[i][1])));
+						R[i][j] = -(((arr[i][0]) * np.log(error+arr[i][0])) + ((arr[i][1]) * np.log(error+arr[i][1])))
 						R[i][j] = lamda1 * R[i][j]  # apply lamda here
 						sum += R[i][j]
 					else:

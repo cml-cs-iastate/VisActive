@@ -7,6 +7,8 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
+import src.SAL.settings as settings
+
 
 def triplet_loss_similarity_learning(anchor, positive, negative, alpha, similar_matrix):
     """
@@ -115,7 +117,7 @@ def load_data(image_paths, image_size):
     images = np.zeros((num_samples, image_size, image_size, 3))
     for i in range(num_samples):
         img = cv2.imread(image_paths[i])
-        img = cv2.resize(img, (64, 64))
+        img = cv2.resize(img, (settings.image_size, settings.image_size))
         img = img * 1.0/255
         images[i, :, :, :] = img
     return images

@@ -37,8 +37,9 @@ def get_dataset(paths):
                 images = os.listdir(face_dir)
                 images.sort()
                 for img in images:
+                    print(img)
                     image_paths = os.path.join(face_dir, img)
-                    dataset.append(ImageClass(class_name, image_paths, img[0:-4]))
+                    dataset.append(ImageClass(class_name, image_paths, img))
     return dataset
 
 

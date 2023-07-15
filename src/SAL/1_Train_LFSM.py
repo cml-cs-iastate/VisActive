@@ -19,7 +19,7 @@ def main():
 
     sub_dir = datetime.strftime(datetime.now(), '%Y%m%d-%H%M%S')
 
-    train_dataset = facenet.get_dataset(settings.data_dir)
+    train_dataset = facenet.get_dataset(settings.training_path)
 
     network = importlib.import_module(settings.model_def, 'inference')
 
@@ -184,7 +184,7 @@ def train(sess, dataset, epoch, images_placeholder, learning_rate_placeholder, g
         while i * batch_size < num_triplets * 3 and batch_number < epoch_size:
             start_time = time.time()
             batch = facenet.get_triplet_batch(triplets, i, batch_size)
-            print(f'batch shape: {np.shape(batch)}')
+            # print(f'batch shape: {np.shape(batch)}')
             feed_dict = {images_placeholder: batch, learning_rate_placeholder: lr}
             err, _, step = sess.run([loss, train_op, global_step], feed_dict=feed_dict)
             duration = time.time() - start_time

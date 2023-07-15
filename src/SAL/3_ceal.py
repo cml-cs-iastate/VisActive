@@ -14,7 +14,7 @@ def main():
     # ------------------------------------------------------------------------------------------------------------------
     # Load Data and Model
 
-    search_dataset = data_process.get_dataset(settings.data_dir_search)
+    train_dataset = data_process.get_dataset(settings.data_dir_search)
 
     network = importlib.import_module(settings.model_def, 'inference')
 
@@ -31,7 +31,9 @@ def main():
         pre_embeddings = network.inference(images_placeholder, weight_decay=settings.weight_decay)
         tf.identity(pre_embeddings, name="pre_embeddings")
 
-        embeddings = tf.nn.l2_normalize(pre_embeddings, 1, 1e-10, name='embeddings')
+        output = tf.compat.v1.layers.dense(pre_embeddings, settings.num_class, activation=None, reuse=False)
+
+        prob = tf.nn.softmax(output, name='prob')
 
         # Create a saver
         saver = tf.compat.v1.train.Saver(tf.compat.v1.global_variables(), max_to_keep=10)
@@ -51,28 +53,30 @@ def main():
             # Keep training until reach max iterations
             print('Loading training data')
             step = 0
-            total_img = np.size(search_dataset, 0)
+            total_img = np.size(train_dataset, 0)
             print('calculate the accuracy on validation set')
-            csv_search_name = open(settings.search_name, 'a+')
-            cvs_search_feature = open(settings.search_feature, 'a+')
-            shuffle_ = np.arange(total_img)
-            np.random.shuffle(shuffle_)
+            csv_search_name = open(settings.search_name, 'a+')  # '.\\classifier\\search_name_caltech-256.csv'
+            cvs_search_feature = open(settings.search_feature, 'a+')  # '.\\classifier\\search_prob_caltech-256.csv'
+            shuffle = np.arange(total_img)
+            np.random.shuffle(shuffle)
 
             while step < total_img:
-                valid_x = data_process.load_data_v2(search_dataset, shuffle_[step], settings.image_size)
-                feature_vector = sess.run([embeddings], feed_dict={images_placeholder: valid_x})
+                print(step)
+                valid_x = data_process.load_data_v2(train_dataset, shuffle[step], settings.image_size)
+                probability = sess.run([prob], feed_dict={images_placeholder: valid_x})
+                print(np.shape(probability))
+                probability = np.reshape(probability, (1, settings.num_class))
 
-                if step % 5000 == 0:
-                    # print(search_dataset[shuffle_[step]].file_name)
+                if step % 500 == 0:
+                    print(train_dataset[shuffle[step]].file_name)
                     csv_search_name.close()
                     cvs_search_feature.close()
                     csv_search_name = open(settings.search_name, 'a+')
                     cvs_search_feature = open(settings.search_feature, 'a+')
 
-                feature_vector = np.reshape(feature_vector, (1, 128))
-                df = pd.DataFrame(feature_vector)
+                df = pd.DataFrame(probability)
                 df.to_csv(cvs_search_feature, header=False)
-                csv_search_name.write(search_dataset[shuffle_[step]].file_name + '\n')
+                csv_search_name.write(train_dataset[shuffle[step]].file_name + '\n')
                 step += 1
 
             cvs_search_feature.close()
